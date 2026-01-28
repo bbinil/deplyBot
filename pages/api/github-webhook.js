@@ -25,12 +25,15 @@ export default async function handler(req, res) {
         url: c.url,
         id: c.id
       }));
+      
 
       // Prepend new commits and keep the list size manageable (e.g., last 50)
       recentCommits = [...newCommits, ...recentCommits].slice(0, 50);
 
       // Prepare Slack Message
+      // Prepare Slack Message - Corrected Structure
       const slackPayload = {
+        text: `New commit in ${repoName}: ${latestCommit.message}`, // Required fallback for mobile notifications
         blocks: [
           {
             type: "section",
@@ -47,9 +50,20 @@ export default async function handler(req, res) {
             ]
           },
           {
-            type: "button",
-            text: { type: "plain_text", text: "View Commit" },
-            url: latestCommit.url
+            type: "actions", // Buttons MUST be inside an actions block
+            elements: [
+              {
+                type: "button",
+                text: { 
+                  type: "plain_text", 
+                  text: "View Commit",
+                  emoji: true 
+                },
+                url: latestCommit.url,
+                action_id: "view_commit_button", // Unique ID for the button
+                style: "primary" // Makes the button green
+              }
+            ]
           }
         ]
       };
